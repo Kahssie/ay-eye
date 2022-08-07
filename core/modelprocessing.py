@@ -1,6 +1,5 @@
 from core import app
 from flask import request
-import torch.nn as nn
 import os
 from mido import Message, MidiFile, MidiTrack
 import torch
@@ -13,7 +12,7 @@ import murderminer as m
 counter = 0
 
 # ROUTE TO GENERATE MODEL 
-@app.route('/generate', methods='POST')
+@app.route('/generate', methods=['POST'])
 def generate():
     global counter
     counter += 1
@@ -30,7 +29,8 @@ PITCH_NAMES = ['C','D-','D','E-','E','F','F#','G','A-','A','B-','B']
 PITCH_EQUALS = {"G-":"F#", "D-":"C#","A-":"G#","E-":"D#","B-":"A#"}
 NOTES = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B']
 
-MODEL_PATH = os.join(os.cwd(),"models/mse_adam_w_weightdecay.pth")
+MODEL_PATH = os.path.join(os.getcwd(),"models\mse_adam_w_weightdecay.pth")
+#print("MODEL PATH:", MODEL_PATH)
 
 OCTAVES = list(range(11))
 NOTES_IN_OCTAVE = len(NOTES)
@@ -70,7 +70,11 @@ class LSTMNetwork(nn.Module):
         return out
 
 # MIDI GENERATION
+#model = LSTMNetwork(7)#.cuda()
+print("LOADING MODEL")
+#model.load_state_dict(torch.load(MODEL_PATH))
 model = torch.load(MODEL_PATH)
+
 # generate a track
 def init_seq():
     random.seed(time.time()) # seed random

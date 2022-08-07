@@ -24,7 +24,7 @@ def file_list():
         list.append(i)
     return render_template('uploads.html', file_list = list)
 
-@app.route("/forward", methods='POST')
+@app.route("/forward", methods=['POST'])
 def move_forward():
     #Moving forward code
     if request.method=="POST":
