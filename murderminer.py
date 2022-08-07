@@ -843,59 +843,6 @@ def key_to_key_pos(key_indices: List[int], key_pos: int) -> ndarray:
     return diffs
 
 
-#
-# def process_file(file_name,result_dict):
-#     base_name = os.path.basename(file_name)
-#
-#     # logger.info(f'working on {file_name}')
-#     result = extract_notes(file_name, args.track_num)
-#
-#     if result is None:
-#         return
-#     else:
-#         pm, piano_roll, beat_time, down_beat_time, beat_indices, down_beat_indices = result
-#
-#     try:
-#         if args.key_name == '':
-#             # key_name = get_key_name(file_name)
-#             key_name = all_key_names
-#
-#             result = cal_tension(
-#                 file_name, piano_roll, beat_time, beat_indices, down_beat_time, down_beat_indices, args.output_folder,
-#                 args.window_size, key_name)
-#
-#         else:
-#             result = cal_tension(
-#                 file_name, piano_roll, beat_time, beat_indices, down_beat_time, down_beat_indices, args.output_folder,
-#                 args.window_size, [args.key_name])
-#
-#         total_tension, diameters, centroid_diff, key_name, key_change_time, key_change_bar, key_change_name, new_output_foler = result
-#
-#         if np.count_nonzero(total_tension) == 0:
-#             logger.info(f"tensile 0 skip {file_name}")
-#
-#             return
-#
-#         if np.count_nonzero(diameters) == 0:
-#             logger.info(f"diameters 0, skip {file_name}")
-#
-#             return
-#
-#     except (ValueError, EOFError, IndexError, OSError, KeyError, ZeroDivisionError) as e:
-#         exception_str = 'Unexpected error in ' + file_name + ':\n', e, sys.exc_info()[0]
-#         logger.info(exception_str)
-#
-#     if key_name is not None:
-#         result_dict[new_output_foler + '/' + base_name] = []
-#         result_dict[new_output_foler + '/' + base_name].append(key_name)
-#         result_dict[new_output_foler + '/' + base_name].append(int(key_change_time))
-#         result_dict[new_output_foler + '/' + base_name].append(int(key_change_bar))
-#         result_dict[new_output_foler + '/' + base_name].append(key_change_name)
-#
-#     else:
-#         logger.info(f'cannot find the key of song {file_name}, skip this file')
-
-
 if __name__ == "__main__":
     args = get_args()
 

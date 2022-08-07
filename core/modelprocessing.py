@@ -1,5 +1,5 @@
 from core import app
-from flask import request
+from flask import request, redirect, url_for
 import os
 from mido import Message, MidiFile, MidiTrack
 import torch
@@ -19,17 +19,20 @@ def generate():
     if request.method == 'POST':
         inp = init_seq()
         gen_z = generate_seq(inp)
-        name = "midi_" + counter + ".mid"
-        mid_out = generate_midi(gen_z, name)
-        print("midi out!", mid_out)
-        
+        print("gebnz len",len(gen_z))
+        name = "midi_" + str(counter) + ".mid"
+        mid_out = generate_midi(gen_z, name) #mid_out=
+        print("midi out!")
+        mid_out.save(os.path.join(app.config['UPLOAD_FOLDER'], name))
+        return redirect(url_for('return_file'))
 
 # CONSTANTS
 PITCH_NAMES = ['C','D-','D','E-','E','F','F#','G','A-','A','B-','B']
 PITCH_EQUALS = {"G-":"F#", "D-":"C#","A-":"G#","E-":"D#","B-":"A#"}
 NOTES = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B']
 
-MODEL_PATH = os.path.join(os.getcwd(),"models\mse_adam_w_weightdecay.pth")
+#MODEL_PATH = os.path.join(os.getcwd(),"models\mse_adam_w_weightdecay.pth")
+MODEL_PATH = os.path.join(os.getcwd(),"models/model1imposter.pt")
 #print("MODEL PATH:", MODEL_PATH)
 
 OCTAVES = list(range(11))
@@ -70,10 +73,10 @@ class LSTMNetwork(nn.Module):
         return out
 
 # MIDI GENERATION
-#model = LSTMNetwork(7)#.cuda()
+model = LSTMNetwork(7)#.cuda()
 print("LOADING MODEL")
-#model.load_state_dict(torch.load(MODEL_PATH))
-model = torch.load(MODEL_PATH)
+model.load_state_dict(torch.load(MODEL_PATH, map_location=torch.device('cpu')))
+#model = torch.load(MODEL_PATH)
 
 # generate a track
 def init_seq():
@@ -90,12 +93,11 @@ def init_seq():
 # function returns a sequence of arrays that encode the information for a midi
 def generate_seq(inp):
     gen_z = inp
-    with torch.no_grad():
-        model.eval()
-    for i in range(SEQ_LEN - len(inp)):
-        gen_inp = [torch.Tensor(x).cuda() for x in gen_z[-(WINDOW_SIZE-1):]]
-        tensor_input = torch.stack(gen_inp, dim=0).cuda()
-        note = model(tensor_input) # generate the note based on last note generated 
+    for i in range(SEQ_LEN):
+        gen_inp = [torch.Tensor(x) for x in gen_z[-(WINDOW_SIZE-1):]]
+        tensor_input = torch.stack(gen_inp, dim=0)
+        note = model(tensor_input)
+
         gen_z.append(note)
     return gen_z
 
@@ -139,6 +141,7 @@ dilation = 5
 
 # code assumes that the values outputed are all valid
 def generate_midi(model_output, midi_name):
+    #print("model output:", model_output)
     time=0
     gen_mid = MidiFile()
     gen_track = MidiTrack()
@@ -147,18 +150,17 @@ def generate_midi(model_output, midi_name):
         pos = [x[1], x[2], x[3]]
         pitch_index = position_to_pitch_index(pos)
         letter_note = note_from_pitch_ind(pitch_index)
-    if type(x) != list:
-        x = x.tolist()
-    # print(x)
-    midi_number = note_to_number(letter_note, round(x[-1]))
-    # midi_number = int(midi_number)
-    # gen_track.append(Message(onoff, note=midi_number, velocity=x[4], time=x[5]))
-    gen_track.append(Message("note_on", channel=3, note=midi_number, velocity=57, time=abs(int(time))))
-    time += x[5] + dilation
-    gen_track.append(Message("note_off", channel=3, note=midi_number, velocity=57, time=abs(int(time))))
-
-    # print(len(gen_track))
-    # print(x[-1])
+        if type(x) != list:
+            x = x.tolist()
+        # print(x)
+        midi_number = note_to_number(letter_note, round(x[-1]))
+        gen_track.append(Message("note_on", channel=3, note=midi_number, velocity=57, time=abs(int(time))))
+        time += x[5] + dilation
+        gen_track.append(Message("note_off", channel=3, note=midi_number, velocity=57, time=abs(int(time))))
+        for mes in gen_track:
+            print(mes)
+        # print(len(gen_track))
+        # print(x[-1])
     #gen_mid.save(midi_name)
     gen_mid.save(os.path.join(app.config['UPLOAD_FOLDER'], midi_name))
     return gen_mid
