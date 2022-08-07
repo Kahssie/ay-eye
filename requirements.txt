@@ -1,0 +1,8 @@
+flask
+torch
+mido
+coloredlogs
+matplotlib
+music21
+numpy
+pretty_midi

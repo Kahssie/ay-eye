@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+
+    <head>
+        <title>MusicGenny Song List</title>
+        <link rel="stylesheet" href="static/style.css">
+    </head>
+
+    <body>
+        <h1>Welcome to the <i><b>MusicGenny</b></i>, song list page!</h1>
+        <h2>Below are the list of songs you have generated so far. You can download and listen to each of them via
+            http://127.0.0.1:5000/uploads/[insert_songname_here.mid] !
+        </h2>
+        <br>
+        {% block content %}
+        <h1>{% block title %} Generated MIDI Files {% endblock %}</h1>
+        <div style="width: 50%; margin: auto">
+            {% for file in file_list %}
+            <div style="padding: 10px; background-color: #EEE; margin: 20px">
+                <p style="font-size: 24px">{{ file }}</p>
+            </div>
+            {% endfor %}
+        </div>
+        {% endblock %}
+
+    </body>
+
+</html>
